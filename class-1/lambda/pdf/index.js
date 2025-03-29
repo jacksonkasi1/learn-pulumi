@@ -155735,34 +155735,46 @@ end`);
   }
 });
 
-// functions/pdf.ts
+// index.ts
 var pdf_exports = {};
 __export(pdf_exports, {
-  createPdf: () => createPdf
+  handler: () => handler
 });
 module.exports = __toCommonJS(pdf_exports);
 var import_pdfkit = __toESM(require_pdfkit());
-var createPdf = async () => {
-  return new Promise((resolve, reject) => {
-    const doc = new import_pdfkit.default({
-      size: "A4",
-      margin: 50
+var handler = async (event, context) => {
+  const createPdf = async () => {
+    return new Promise((resolve, reject) => {
+      const doc = new import_pdfkit.default({
+        size: "A4",
+        margin: 50
+      });
+      doc.fontSize(24).text("Hello World", 50, 50);
+      doc.fontSize(18).text("This is a subtitle", 50, 100);
+      doc.fontSize(12).text("This is a table", 50, 150);
+      doc.fontSize(12).text("This is a footer", 50, 200);
+      const buffer = [];
+      doc.on("data", buffer.push.bind(buffer));
+      doc.on("end", () => {
+        resolve(Buffer.concat(buffer));
+      });
+      doc.end();
     });
-    doc.fontSize(24).text("Hello World", 50, 50);
-    doc.fontSize(18).text("This is a subtitle", 50, 100);
-    doc.fontSize(12).text("This is a table", 50, 150);
-    doc.fontSize(12).text("This is a footer", 50, 200);
-    const buffer = [];
-    doc.on("data", buffer.push.bind(buffer));
-    doc.on("end", () => {
-      resolve(Buffer.concat(buffer));
-    });
-    doc.end();
-  });
+  };
+  const pdf = await createPdf();
+  return {
+    statusCode: 200,
+    body: pdf.toString("base64"),
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": "attachment; filename=my-pdf.pdf"
+    },
+    isBase64Encoded: true
+  };
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  createPdf
+  handler
 });
 /*! Bundled license information:
 

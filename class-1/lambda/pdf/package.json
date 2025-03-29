@@ -1,0 +1,13 @@
+{
+  "name": "pdf-lambda",
+  "version": "1.0.0",
+  "dependencies": {
+    "pdfkit": "^0.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18",
+    "@types/pdfkit": "^0.13.9",
+    "typescript": "^5.0.0",
+    "esbuild": "^0.20.1"
+  }
+} 

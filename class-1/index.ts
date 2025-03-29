@@ -1,7 +1,27 @@
+import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as apigateway from "@pulumi/aws-apigateway";
+import * as path from "path";
 
-import { createPdf } from "./dist/functions/pdf";
+// Create IAM role for Lambda
+const lambdaRole = new aws.iam.Role("lambdaRole", {
+    assumeRolePolicy: JSON.stringify({
+        Version: "2012-10-17",
+        Statement: [{
+            Action: "sts:AssumeRole",
+            Effect: "Allow",
+            Principal: {
+                Service: "lambda.amazonaws.com"
+            }
+        }]
+    })
+});
+
+// Attach basic Lambda execution policy
+new aws.iam.RolePolicyAttachment("lambdaRolePolicy", {
+    role: lambdaRole,
+    policyArn: aws.iam.ManagedPolicy.AWSLambdaBasicExecutionRole,
+});
 
 // A Lambda function to invoke
 const fn = new aws.lambda.CallbackFunction("fn", {
@@ -13,21 +33,16 @@ const fn = new aws.lambda.CallbackFunction("fn", {
   },
 });
 
-const pdfFn = new aws.lambda.CallbackFunction("pdfFn", {
+// Create a Lambda function for PDF generation
+const pdfFn = new aws.lambda.Function("pdfFn", {
+  runtime: aws.lambda.Runtime.NodeJS20dX,
+  handler: "index.handler",
+  role: lambdaRole.arn,
+  code: new pulumi.asset.AssetArchive({
+    "index.js": new pulumi.asset.FileAsset(path.join(__dirname, "lambda/pdf/index.js")),
+    "node_modules": new pulumi.asset.FileArchive(path.join(__dirname, "lambda/pdf/node_modules")),
+  }),
   memorySize: 512,
-  callback: async (ev, ctx) => {
-    const pdf = await createPdf();
-
-    return {
-      statusCode: 200,
-      body: pdf.toString("base64"),
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": "attachment; filename=my-pdf.pdf",
-      },
-      isBase64Encoded: true,
-    };
-  },
 });
 
 // A REST API to route requests to HTML content and the Lambda function
