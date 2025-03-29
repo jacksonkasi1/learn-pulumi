@@ -1,7 +1,6 @@
 {
   "name": "pdf-generator",
   "devDependencies": {
-    "@types/glob": "^8.1.0",
     "@types/node": "22.13.14",
     "esbuild": "0.25.1",
     "glob": "^10.3.10",
@@ -16,10 +15,10 @@
     "pdfkit": "^0.16.0"
   },
   "scripts": {
-    "build": "pnpm run build:lambda && pnpm run build:pulumi",
+    "build": "bun run build:lambda && bun run build:pulumi",
     "build:lambda": "node scripts/build-lambdas.js",
     "build:pulumi": "tsc",
     "build:watch": "node scripts/build-lambdas.js --watch",
-    "deploy": "pnpm run build && pulumi up"
+    "deploy": "bun run build && pulumi up"
   }
 }

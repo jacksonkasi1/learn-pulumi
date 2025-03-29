@@ -22,7 +22,6 @@ lambdaDirs.forEach(lambdaDir => {
   const functionName = path.basename(lambdaDir.replace(/\/$/, ''));
   const entryFile = path.join(lambdaDir, 'index.ts');
   const outputDir = path.join('out/lambda', functionName);
-  const outputFile = path.join(outputDir, 'index.js');
   
   // Skip if the entry file doesn't exist
   if (!fs.existsSync(entryFile)) {
@@ -38,6 +37,8 @@ lambdaDirs.forEach(lambdaDir => {
   console.log(`Building ${functionName}...`);
   
   try {
+    // Build the TypeScript code
+    const outputFile = path.join(outputDir, 'index.js');
     const command = `esbuild ${entryFile} --bundle --platform=node --target=node20 --outfile=${outputFile} ${watchFlag}`;
     
     if (isWatchMode) {
@@ -49,6 +50,28 @@ lambdaDirs.forEach(lambdaDir => {
     } else {
       // In normal mode, run synchronously
       execSync(command, { stdio: 'inherit' });
+      
+      // Copy all non-TypeScript files (html, json, etc.)
+      const nonTsFiles = glob.sync(`${lambdaDir}**/*.!(ts)`, { posix: true, nodir: true });
+      
+      if (nonTsFiles.length > 0) {
+        console.log(`  Copying ${nonTsFiles.length} additional files for ${functionName}...`);
+        
+        nonTsFiles.forEach(filePath => {
+          const relativePath = path.relative(lambdaDir, filePath);
+          const destPath = path.join(outputDir, relativePath);
+          
+          // Create directory if it doesn't exist
+          const destDir = path.dirname(destPath);
+          if (!fs.existsSync(destDir)) {
+            fs.mkdirSync(destDir, { recursive: true });
+          }
+          
+          // Copy the file
+          fs.copyFileSync(filePath, destPath);
+        });
+      }
+      
       console.log(`Successfully built ${functionName}`);
     }
   } catch (error) {
@@ -58,6 +81,47 @@ lambdaDirs.forEach(lambdaDir => {
     }
   }
 });
+
+// Copy the www directory for static content
+try {
+  const wwwSrcPath = path.join('src', 'www');
+  const wwwDestPath = path.join('out', 'www');
+  
+  if (fs.existsSync(wwwSrcPath)) {
+    console.log('Copying www directory for static content...');
+    
+    // Remove old www directory if it exists
+    if (fs.existsSync(wwwDestPath)) {
+      fs.rmSync(wwwDestPath, { recursive: true, force: true });
+    }
+    
+    // Create www directory
+    fs.mkdirSync(wwwDestPath, { recursive: true });
+    
+    // Copy all files from www
+    const wwwFiles = glob.sync(`${wwwSrcPath}/**/*`, { posix: true, nodir: true });
+    
+    wwwFiles.forEach(filePath => {
+      const relativePath = path.relative(wwwSrcPath, filePath);
+      const destPath = path.join(wwwDestPath, relativePath);
+      
+      // Create directory if it doesn't exist
+      const destDir = path.dirname(destPath);
+      if (!fs.existsSync(destDir)) {
+        fs.mkdirSync(destDir, { recursive: true });
+      }
+      
+      // Copy the file
+      fs.copyFileSync(filePath, destPath);
+    });
+    
+    console.log('Successfully copied www directory');
+  } else {
+    console.log('No www directory found, skipping...');
+  }
+} catch (error) {
+  console.error('Error copying www directory:', error);
+}
 
 if (isWatchMode) {
   console.log('Watch mode active. Press Ctrl+C to stop.');

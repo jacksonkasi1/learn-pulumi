@@ -30,7 +30,8 @@ const pdfFunction = new aws.lambda.Function("pdfFunction", {
   handler: "index.handler",
   role: lambdaRole.arn,
   code: new pulumi.asset.AssetArchive({
-    ".": new pulumi.asset.FileArchive("./out/lambda/pdf"),
+    // Use the absolute path with __dirname to avoid path resolution issues
+    ".": new pulumi.asset.FileArchive(`${__dirname}/../out/lambda/pdf`),
   }),
   memorySize: 512,
   timeout: 10,
@@ -39,11 +40,9 @@ const pdfFunction = new aws.lambda.Function("pdfFunction", {
 // Create a REST API with API Gateway
 const api = new apigateway.RestAPI("api", {
   routes: [
-    // Serve static content from www directory
-    { path: "/", localPath: "./src/www" },
-    // PDF generation endpoint
+    // Use the absolute path for www directory as well
+    { path: "/", localPath: `${__dirname}/../out/www` },
     { path: "/pdf", method: "GET", eventHandler: pdfFunction },
-    // Allow POST for sending larger content
     { path: "/pdf", method: "POST", eventHandler: pdfFunction },
   ],
 });

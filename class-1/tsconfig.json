@@ -13,9 +13,14 @@
         "forceConsistentCasingInFileNames": true,
         "esModuleInterop": true,
         "declaration": true,
-        "allowJs": true
+        "allowJs": true,
+        "skipLibCheck": true
     },
     "include": [
         "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "src/lambda/**/*"
     ]
 }
