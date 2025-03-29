@@ -1,20 +1,23 @@
 {
-    "name": "pdf-generator",
-    "devDependencies": {
-        "@types/node": "^18",
-        "typescript": "^5.0.0",
-        "esbuild": "^0.20.1"
-    },
-    "dependencies": {
-        "@pulumi/aws": "^6.0.0",
-        "@pulumi/aws-apigateway": "^2.0.0",
-        "@pulumi/awsx": "^2.0.2",
-        "@pulumi/pulumi": "^3.113.0",
-        "@types/pdfkit": "^0.13.9",
-        "pdfkit": "^0.16.0"
-    },
-    "scripts": {
-        "build": "cd lambda/pdf && pnpm install && esbuild index.ts --bundle --platform=node --target=node18 --outfile=index.js",
-        "build:watch": "cd lambda/pdf && esbuild index.ts --bundle --platform=node --target=node18 --outfile=index.js --watch"
-    }
+  "name": "pdf-generator",
+  "devDependencies": {
+    "@types/node": "22.13.14",
+    "typescript": "^5.0.0",
+    "esbuild": "0.25.1"
+  },
+  "dependencies": {
+    "@pulumi/aws": "^6.0.0",
+    "@pulumi/aws-apigateway": "^2.0.0",
+    "@pulumi/awsx": "^2.0.2",
+    "@pulumi/pulumi": "^3.113.0",
+    "@types/pdfkit": "^0.13.9",
+    "pdfkit": "^0.16.0"
+  },
+  "scripts": {
+    "build": "pnpm run build:lambda && pnpm run build:pulumi",
+    "build:lambda": "node scripts/build-lambdas.js",
+    "build:pulumi": "tsc",
+    "build:watch": "node scripts/build-lambdas.js --watch",
+    "deploy": "pnpm run build && pulumi up"
+  }
 }

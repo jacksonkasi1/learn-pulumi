@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "strict": true,
-        "outDir": "bin",
+        "outDir": "out",
         "target": "es2020",
         "module": "commonjs",
         "moduleResolution": "node",
@@ -16,7 +16,6 @@
         "allowJs": true
     },
     "include": [
-        "index.ts",
-        "dist/**/*"
+        "src/**/*"
     ]
-}
+} 
