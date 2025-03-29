@@ -10,9 +10,13 @@
         "pretty": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
-        "forceConsistentCasingInFileNames": true
+        "forceConsistentCasingInFileNames": true,
+        "esModuleInterop": true,
+        "declaration": true,
+        "allowJs": true
     },
-    "files": [
-        "index.ts"
+    "include": [
+        "index.ts",
+        "dist/**/*"
     ]
 }
